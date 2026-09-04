@@ -28,6 +28,8 @@ extend_enum(Comp, 'TINT_COLOR')
 extend_enum(Comp, 'TINT_SPRITE')
 extend_enum(Comp, 'WORLD')
 
+use_radians = True
+
 
 class TSprite:
     def __init__(self,
@@ -92,7 +94,7 @@ class TSprite:
         return TSprite(**existing)
 
     def __repr__(self):
-        return f'TSprite({self.texture}, {self.srcrect}, {self.dstrect}, anchor={self.anchor}, layer={self.layer}, flip_x={self.flip_x}, flip_y={self.flip_y})'
+        return f'TSprite({self.texture}, srcrect={self.srcrect}, dstrect={self.dstrect}, anchor={self.anchor}, layer={self.layer}, flip_x={self.flip_x}, flip_y={self.flip_y})'
 
 
 @dataclass
@@ -107,11 +109,8 @@ class SpriteAnim:
     timer: LerpThing
 
 
-def sys_bounce(dt: float, eid: EntityID, prsa: PRSA, sprite: TSprite, momentum: Vector, world: pygame.Rect) -> None:
+def sys_bounce(eid: EntityID, prsa: PRSA, sprite: TSprite, momentum: Vector, world: pygame.Rect) -> None:
     """Bounce the sprite within the given container.
-
-    :param dt: Delta time
-    :param eid: The entity ID
 
     """
 
@@ -133,10 +132,9 @@ def sys_bounce(dt: float, eid: EntityID, prsa: PRSA, sprite: TSprite, momentum: 
         momentum.y = -momentum.y
 
 
-def sys_container(dt: float, eid: EntityID, prsa: PRSA, container: pygame.Rect) -> None:
+def sys_container(eid: EntityID, prsa: PRSA, container: pygame.Rect) -> None:
     """Kill the entity if it has left the given boundaries.
 
-    :param dt: Delta time
     :param eid: The entity ID
 
     """
@@ -166,9 +164,13 @@ def _draw_sprite(sprite: TSprite, prsa: PRSA) -> None:
     if prsa.scale != 1:
         dstrect.scale_by_ip(prsa.scale)
 
+    angle = prsa.rotation + sprite.angle
+    if use_radians:
+        angle = glm.degrees(angle)
+
     texture.draw(srcrect=sprite.srcrect,
                  dstrect=dstrect,
-                 angle=prsa.rotation + sprite.angle,
+                 angle=angle,
                  origin=sprite.anchor,
                  flip_x=sprite.flip_x,
                  flip_y=sprite.flip_y)
@@ -176,7 +178,7 @@ def _draw_sprite(sprite: TSprite, prsa: PRSA) -> None:
     texture.alpha = bkp_alpha
 
 
-def sys_bulk_draw_sprites(dt: float, entities: EntityComponentsBundle, *, layered=False):
+def sys_bulk_draw_sprites(entities: EntityComponentsBundle, *, layered=False):
     if layered:
         sprites = sorted(entities, key=lambda e: e[1].layer)
     else:
@@ -186,10 +188,9 @@ def sys_bulk_draw_sprites(dt: float, entities: EntityComponentsBundle, *, layere
         _draw_sprite(sprite, prsa)
 
 
-def sys_draw_sprite(dt: float, eid: EntityID, sprite: TSprite, prsa: PRSA) -> None:
+def sys_draw_sprite(eid: EntityID, sprite: TSprite, prsa: PRSA) -> None:
     """Draw a sprite transformed and positioned by the PRSA.
 
-    :param dt: Delta time
     :param eid: The entity ID
     :param sprite: The TSprite component holding the texture
     :param prsa: The PRSA transform object of the entity
@@ -199,10 +200,9 @@ def sys_draw_sprite(dt: float, eid: EntityID, sprite: TSprite, prsa: PRSA) -> No
     _draw_sprite(sprite, prsa)
 
 
-def sys_sprite_anim(dt: float, eid: EntityID, sprite_anim: SpriteAnim) -> None:
+def sys_sprite_anim(eid: EntityID, sprite_anim: SpriteAnim) -> None:
     """Based on the timer in ``anim``, update ``sprite``.
 
-    :param dt: Delta time
     :param eid: The entity ID
     :param sprite_anim: The sprite animation
 
@@ -215,10 +215,9 @@ def sys_sprite_anim(dt: float, eid: EntityID, sprite_anim: SpriteAnim) -> None:
     ecs.update_component(eid, Comp.SPRITE, sprite)
 
 
-def sys_mouse(dt: float, eid: EntityID, prsa: PRSA, *, mouse: Vector) -> None:
+def sys_mouse(eid: EntityID, prsa: PRSA, *, mouse: Vector) -> None:
     """Apply the mouse position to the PRSA.
 
-    :param dt: Delta time
     :param eid: The entity ID
     :param prsa: The PRSA transform object of the entity
     :param mouse: The current mouse position
