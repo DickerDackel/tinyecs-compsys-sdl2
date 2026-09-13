@@ -1,19 +1,39 @@
-FIXME API
-=========
+tinyecs-compsys-base API
+========================
 
 .. contents::
    :class: this-will-duplicate-information-and-it-is-still-useful-here
 
-Core classes
-------------
+Components
+----------
 
-.. autoclass:: FIXME.module.ClassA
-.. autoclass:: FIXME.module.ClassB
-.. autoclass:: FIXME.module.ClassC
+Registers the following CIDs to ``tinyecs-compsy.Comp``:
 
-Functions
----------
+* CONTAINER
+* GRAVITY
+* LIFETIME
+* SPLINE
+* SPRITE
+* SPRITE_ANIM
+* TARGET
+* TINT
+* TINT_COLOR
+* TINT_SPRITE
+* WORLD
 
-.. autofunction:: FIXME.module.function_a
-.. autofunction:: FIXME.module.function_b
-.. autofunction:: FIXME.module.function_c
+.. autoclass:: tinyecs.compsys.sdl2.TSprite
+   :members:
+
+.. autoclass:: tinyecs.compsys.sdl2.SpriteAnim
+   :members:
+
+
+Systems
+-------
+
+.. autofunction:: tinyecs.compsys.sdl2.sys_bounce
+.. autofunction:: tinyecs.compsys.sdl2.sys_container
+.. autofunction:: tinyecs.compsys.sdl2.sys_bulk_draw_sprites
+.. autofunction:: tinyecs.compsys.sdl2.sys_draw_sprite
+.. autofunction:: tinyecs.compsys.sdl2.sys_sprite_anim
+.. autofunction:: tinyecs.compsys.sdl2.sys_mouse
