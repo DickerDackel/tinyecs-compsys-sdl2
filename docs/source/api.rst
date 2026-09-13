@@ -19,6 +19,7 @@ Registers the following CIDs to ``tinyecs-compsy.Comp``:
 * TINT
 * TINT_COLOR
 * TINT_SPRITE
+* WANTS_MOUSE
 * WORLD
 
 .. autoclass:: tinyecs.compsys.sdl2.TSprite

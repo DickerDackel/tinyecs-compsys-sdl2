@@ -26,6 +26,7 @@ extend_enum(Comp, 'TARGET')
 extend_enum(Comp, 'TINT')
 extend_enum(Comp, 'TINT_COLOR')
 extend_enum(Comp, 'TINT_SPRITE')
+extend_enum(Comp, 'WANTS_MOUSE')
 extend_enum(Comp, 'WORLD')
 
 use_radians = True
@@ -174,7 +175,6 @@ def _draw_sprite(sprite: TSprite, prsa: PRSA) -> None:
                  origin=sprite.anchor,
                  flip_x=sprite.flip_x,
                  flip_y=sprite.flip_y)
-    print(f'draw {texture} at {dstrect}')
 
     texture.alpha = bkp_alpha
 
@@ -223,11 +223,12 @@ def sys_sprite_anim(eid: EntityID, sprite_anim: SpriteAnim) -> None:
     ecs.update_component(eid, Comp.SPRITE, sprite)
 
 
-def sys_mouse(eid: EntityID, prsa: PRSA, *, mouse: Vector) -> None:
+def sys_mouse(eid: EntityID, prsa: PRSA, wants_mouse: bool, *, mouse: Vector) -> None:
     """Apply the mouse position to the PRSA.
 
     :param eid: The entity ID
     :param prsa: The PRSA transform object of the entity
+    :param wants_mouse: To only use entities that want a mouse position
     :param mouse: The current mouse position
 
     .. note: The mouse position must be provided as kwarg when running this system.
