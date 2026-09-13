@@ -174,11 +174,19 @@ def _draw_sprite(sprite: TSprite, prsa: PRSA) -> None:
                  origin=sprite.anchor,
                  flip_x=sprite.flip_x,
                  flip_y=sprite.flip_y)
+    print(f'draw {texture} at {dstrect}')
 
     texture.alpha = bkp_alpha
 
 
 def sys_bulk_draw_sprites(entities: EntityComponentsBundle, *, layered=False):
+    """Bulk-draw sprites transformed and positioned by the PRSA.
+
+    :param eid: A list of ``tinyecs.EntityComponentsBundle`` to loop over
+    :param layered: Flag if the ``layer`` attribute in the sprite should be honored
+
+    """
+
     if layered:
         sprites = sorted(entities, key=lambda e: e[1].layer)
     else:
