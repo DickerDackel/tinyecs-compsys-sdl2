@@ -1,4 +1,4 @@
-tinyecs-compsys-base API
+tinyecs-compsys-sdl2 API
 ========================
 
 .. contents::
@@ -7,11 +7,10 @@ tinyecs-compsys-base API
 Components
 ----------
 
-Registers the following CIDs to ``tinyecs-compsy.Comp``:
+Registers the following CIDs to ``tinyecs.compsys.Comp``:
 
 * CONTAINER
 * GRAVITY
-* LIFETIME
 * SPLINE
 * SPRITE
 * SPRITE_ANIM
@@ -23,7 +22,10 @@ Registers the following CIDs to ``tinyecs-compsy.Comp``:
 * WORLD
 
 .. autoclass:: tinyecs.compsys.sdl2.TSprite
+   :class-doc-from: both
    :members:
+   :special-members: __replace__
+
 
 .. autoclass:: tinyecs.compsys.sdl2.SpriteAnim
    :members:

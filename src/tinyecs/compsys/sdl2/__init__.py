@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import MutableSequence, Sequence
 from dataclasses import dataclass
 
 import glm
@@ -9,16 +9,16 @@ import tinyecs as ecs
 from aenum import extend_enum
 from glm import vec2
 from pgcooldown import LerpThing
-from tinyecs import EntityID, EntityComponentsBundle
+from tinyecs import EntityID
 from tinyecs.compsys import Comp
 from tinyecs.compsys.dynamics import PRSA
 
 
 type Vector = pygame.Vector2 | glm.vec2 | Sequence[float]
+type MVector = pygame.Vector2 | glm.vec2 | MutableSequence[float]
 
 extend_enum(Comp, 'CONTAINER')
 extend_enum(Comp, 'GRAVITY')
-extend_enum(Comp, 'LIFETIME')
 extend_enum(Comp, 'SPLINE')
 extend_enum(Comp, 'SPRITE')
 extend_enum(Comp, 'SPRITE_ANIM')
@@ -29,7 +29,7 @@ extend_enum(Comp, 'TINT_SPRITE')
 extend_enum(Comp, 'WANTS_MOUSE')
 extend_enum(Comp, 'WORLD')
 
-use_radians = True
+use_radians = False
 
 
 class TSprite:
@@ -38,7 +38,7 @@ class TSprite:
                  srcrect: pygame.Rect,
                  scale: float = 1.0,
                  angle: float = 0.0,
-                 anchor: vec2 | None = None,
+                 anchor: vec2 | str | None = 'center',
                  flip_x: bool = False,
                  flip_y: bool = False,
                  layer: int = 0):
@@ -46,10 +46,11 @@ class TSprite:
 
         :param texture: The actual texture
         :param srcrect: The source coordinates on the texture, assuming it's an atlas
-        :param scale: The base scale of the sprite.  This is the basis that
-            scaling during renering will be applie to self.texture = texture
+        :param scale: The base scale of the sprite.  This is the base scale that
+            scaling during rendering will be applied to
         :param angle: The base angle of the sprite, e.g. the direction it's on the sprite sheet.
-        :param anchor: The pivot point, defaults to center
+        :param anchor: The pivot point, defaults to 'center'.  See
+            ``pygame.rect.Rect`` point attributes for possible values.
         :param flip_x: Sprite must be flipped horizontally
         :param flip_y: Sprite must be flipped vertically
         :param layer: An optional sprite layer
@@ -83,12 +84,12 @@ class TSprite:
         yield 'anchor', self.anchor
         yield 'flip_x', self.flip_x
         yield 'flip_y', self.flip_y
+        yield 'layer', self.layer
 
     def __replace__(self, /, **kwargs):
         """Clone the sprite while also changing parameters.
 
-        .. note:: Except ``texture`` and ``srcrect``, the argument list is the
-            same as instantiating a :class:`TSprite`.
+        .. note:: The argument list is the same as instantiating a :class:`TSprite`.
         """
         existing = dict(self)
         existing.update(kwargs)
@@ -110,33 +111,49 @@ class SpriteAnim:
     timer: LerpThing
 
 
-def sys_bounce(eid: EntityID, prsa: PRSA, sprite: TSprite, momentum: Vector, world: pygame.Rect) -> None:
-    """Bounce the sprite within the given container.
+def sys_bounce(eid: EntityID, prsa: PRSA, sprite: TSprite, momentum: MVector, world: pygame.Rect) -> None:
+    """Bounce the sprite within the given world container.
+
+    :param eid: The entity ID
+    :param prsa: The PRSA transform object of the entity
+    :param sprite: A TSprite component containing the texture and relating parameters
+    :param momentum: The momentum of the entity
+    :param world: A Rect describing the boundaries to bounce in
 
     """
 
-    rect = sprite.dstrect.move_to(center=prsa.pos)
+    w_offset = -vec2(world.topleft)
+    w_normalized = world.move_to(topleft=(0, 0))
+
+    rect = sprite.dstrect.move_to(center=prsa.pos + w_offset)
+
     if prsa.scale != 1:
         rect.scale_by_ip(prsa.scale)
 
-    if rect.left < world.left:
-        rect.left = world.left - rect.left
-        momentum.x = -momentum.x
-    elif rect.right > world.right:
-        rect.right = 2 * world.right - rect.right
-        momentum.x = -momentum.x
-    if rect.top < world.top:
-        rect.top = world.top - rect.top
-        momentum.y = -momentum.y
-    elif rect.bottom > world.bottom:
-        rect.bottom = 2 * world.bottom - rect.bottom
-        momentum.y = -momentum.y
+    initial_pos = vec2(rect.center)
+
+    if rect.left < w_normalized.left:
+        rect.left = w_normalized.left - rect.left
+        momentum[0] = -momentum[0]
+    elif rect.right > w_normalized.right:
+        rect.right = 2 * w_normalized.right - rect.right
+        momentum[0] = -momentum[0]
+    if rect.top < w_normalized.top:
+        rect.top = w_normalized.top - rect.top
+        momentum[1] = -momentum[1]
+    elif rect.bottom > w_normalized.bottom:
+        rect.bottom = 2 * w_normalized.bottom - rect.bottom
+        momentum[1] = -momentum[1]
+
+    prsa.pos += vec2(rect.center) - initial_pos
 
 
 def sys_container(eid: EntityID, prsa: PRSA, container: pygame.Rect) -> None:
-    """Kill the entity if it has left the given boundaries.
+    """Mark the entity as killed if its prsa.pos has left the given boundaries.
 
     :param eid: The entity ID
+    :param prsa: The PRSA transform object of the entity
+    :param container: If the entity leaves the container, it's marked as killed
 
     """
 
@@ -179,10 +196,10 @@ def _draw_sprite(sprite: TSprite, prsa: PRSA) -> None:
     texture.alpha = bkp_alpha
 
 
-def sys_bulk_draw_sprites(entities: EntityComponentsBundle, *, layered=False):
+def sys_bulk_draw_sprites(entities: list[tuple[EntityID, TSprite, PRSA]], *, layered=False):
     """Bulk-draw sprites transformed and positioned by the PRSA.
 
-    :param eid: A list of ``tinyecs.EntityComponentsBundle`` to loop over
+    :param entities: A list of ``(eid, sprite, prsa)`` tuples  to loop over
     :param layered: Flag if the ``layer`` attribute in the sprite should be honored
 
     """
@@ -209,10 +226,13 @@ def sys_draw_sprite(eid: EntityID, sprite: TSprite, prsa: PRSA) -> None:
 
 
 def sys_sprite_anim(eid: EntityID, sprite_anim: SpriteAnim) -> None:
-    """Based on the timer in ``anim``, update ``sprite``.
+    """Based on the timer in ``sprite_anim``, update the ``sprite`` component.
+
+    If the timer in ``sprite_anim`` is non-repeating, the last frame will be
+    selected if the timer runs out.
 
     :param eid: The entity ID
-    :param sprite_anim: The sprite animation
+    :param sprite_anim: The sprite animation component
 
     """
 
@@ -228,10 +248,12 @@ def sys_mouse(eid: EntityID, prsa: PRSA, wants_mouse: bool, *, mouse: Vector) ->
 
     :param eid: The entity ID
     :param prsa: The PRSA transform object of the entity
-    :param wants_mouse: To only use entities that want a mouse position
+    :param wants_mouse: The marker component that indicates that this entity
+        receives the mouse position. The existence of this component alone is
+        sufficient, its value is ignored
     :param mouse: The current mouse position
 
-    .. note: The mouse position must be provided as kwarg when running this system.
+    .. note:: The mouse position must be provided as kwarg when running this system.
     """
 
     prsa.pos = vec2(mouse)

@@ -1,32 +1,40 @@
 tinyecs-compsys-sdl2
 ====================
 
-Components for pygame-ce's sdl2 rendering.
+``tinyecs.compsys.sdl2`` provides systems and components dealing with
+the ``pygame-ce`` SDL2 rendering backend.  It covers topics around textures,
+sprites, ...
 
 Synopsis
 --------
 
+This package relies on registered component IDs from ``tinyecs-compsys-base``.
+It should not be used standalone, but instead be automatically detected and
+registered with the top level ``tinyecs.compsys`` package.
+
 .. code:: python
 
-   from tinyecs.compsys.sdl2 import ...
+   import tinyecs.compsys as cs
 
-Usage
------
-
-This package contains pygame-ce sdl2 components and systems.
+   cs.register()
 
 Installation
 ------------
 
-Installation instructions + requirements (should come automagically with
-pyproject.toml)
+It's up to you, if you install the currently provided ``compsys`` packages from
+``tinyecs`` by using
 
 .. code:: console
 
-   pip install tinyecs[sdl2]
-   # or
+   pip install tinyecs[base,sdl2]
+
+or include them by adding specific dependencies:
+
+.. code:: console
+
    pip install tinyecs
    pip install tinyecs-compsys
+   pip install tinyecs-compsys-base
    pip install tinyecs-compsys-sdl2
 
 Support / Contributing
@@ -34,7 +42,7 @@ Support / Contributing
 
 Issues can be opened on `github issues`_
 
-.. _github issues: https://forgejo.indieandmore.photography/dickerdackel/tinyecs-compsys/issues
+.. _github issues: https://github.com/dickerdackel/tinyecs-compsys-sdl2/issues
 
 
 License
