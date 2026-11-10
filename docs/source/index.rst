@@ -6,6 +6,7 @@ tinyecs-compsys-sdl2 - pygame-ce sdl2 compsys for tinyecs
 
    introduction
    api
+   ai-policy
    license
 
 Index

@@ -13,8 +13,7 @@ Synopsis
 Usage
 -----
 
-This package has no direct functionality, but all sub modules will register
-their component IDs in the ``tinyecs.compsys.Comp`` enum.
+This package contains pygame-ce sdl2 components and systems.
 
 Installation
 ------------
@@ -36,8 +35,6 @@ Support / Contributing
 Issues can be opened on `github issues`_
 
 .. _github issues: https://forgejo.indieandmore.photography/dickerdackel/tinyecs-compsys/issues
-
-.. include:: AI-policy.rst
 
 
 License
