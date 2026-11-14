@@ -9,7 +9,7 @@
 project = 'tinyecs-compsys-sdl2'
 copyright = '2026, Michael "Dicker Dackel" Lamertz'
 author = 'Michael "Dicker Dackel" Lamertz'
-release = '0.0.3'
+release = '0.0.4'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
