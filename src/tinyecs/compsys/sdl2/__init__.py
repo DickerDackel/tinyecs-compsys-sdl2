@@ -257,3 +257,7 @@ def sys_mouse(eid: EntityID, prsa: PRSA, wants_mouse: bool, *, mouse: Vector) ->
     """
 
     prsa.pos = vec2(mouse)
+
+
+__all__ = ['SpriteAnim', 'TSprite', 'sys_bounce', 'sys_bulk_draw_sprites',
+           'sys_container', 'sys_draw_sprite', 'sys_mouse', 'sys_sprite_anim']
