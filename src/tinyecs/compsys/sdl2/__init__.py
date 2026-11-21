@@ -177,7 +177,8 @@ def _draw_sprite(sprite: TSprite, prsa: PRSA) -> None:
     texture.alpha = prsa.alpha
 
     anchor = sprite.anchor or sprite.dstrect.center
-    dstrect = sprite.dstrect.move_to(center=glm.round(prsa.pos + sprite.dstrect.center - anchor))
+    pos = prsa.pos + prsa.offset + sprite.dstrect.center - anchor
+    dstrect = sprite.dstrect.move_to(center=glm.round(pos))
 
     if prsa.scale != 1:
         dstrect.scale_by_ip(prsa.scale)
