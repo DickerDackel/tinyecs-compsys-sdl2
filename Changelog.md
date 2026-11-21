@@ -1,3 +1,7 @@
+# v0.0.5
+
+Make use of the new offset in tinyecs.compsys.dynamics.PRSA
+
 # v0.0.4
 
 - tinyecs.compsys now supports star imports from sub-packages
