@@ -1,3 +1,6 @@
+# v0.0.6
+- Fixed wrong pivot point of scaled sprites
+
 # v0.0.5
 
 Make use of the new offset in tinyecs.compsys.dynamics.PRSA
