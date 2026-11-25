@@ -173,15 +173,27 @@ def _draw_sprite(sprite: TSprite, prsa: PRSA) -> None:
 
     texture = sprite.texture
 
+    eid = ecs.eid_of_comp(prsa)[0]
     bkp_alpha = texture.alpha
     texture.alpha = prsa.alpha
 
-    anchor = sprite.anchor or sprite.dstrect.center
-    pos = prsa.pos + prsa.offset + sprite.dstrect.center - anchor
-    dstrect = sprite.dstrect.move_to(center=glm.round(pos))
+    dstrect = sprite.dstrect.copy()
 
-    if prsa.scale != 1:
-        dstrect.scale_by_ip(prsa.scale)
+    if prsa.scale == 1:
+        anchor = sprite.anchor or dstrect.center
+    else:
+        # vastly faster than scale_by + moveto
+        dstrect.width *= prsa.scale
+        dstrect.height *= prsa.scale
+
+        anchor = sprite.anchor * prsa.scale if sprite.anchor else dstrect.center
+        if sprite.anchor:
+            anchor = sprite.anchor * prsa.scale
+        else:
+            anchor = dstrect.center
+
+    pos = prsa.pos + prsa.offset + dstrect.center - anchor
+    dstrect = dstrect.move_to(center=glm.round(pos))
 
     angle = prsa.rotation + sprite.angle
     if use_radians:
